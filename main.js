@@ -1,12 +1,3 @@
-function detectDevice() {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    if (isMobile) {
-        document.body.classList.add('mobile');
-    } else {
-        document.body.classList.add('desktop');
-    }
-}
-
 function searchQuestions(keywords) {
     const results = [];
     const nonEmptyKeywords = keywords.filter(keyword => keyword.trim().length > 0);
@@ -104,15 +95,9 @@ function addCopyHandlers() {
             this.classList.remove('hover-effect');
         });
         
-        item.addEventListener('mouseenter', function() {
-            this.classList.add('hover-effect');
-        });
-        
-        item.addEventListener('mouseleave', function() {
-            this.classList.remove('hover-effect');
-        });
-        
-        item.addEventListener('click', function() {
+        item.addEventListener('click', function(e) {
+            if (e.target.tagName === 'MARK') return;
+            
             const answer = this.getAttribute('data-answer');
             copyToClipboard(answer);
             showCopyNotification();
@@ -127,18 +112,18 @@ function addCopyHandlers() {
 }
 
 function copyToClipboard(text) {
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    document.body.appendChild(textarea);
-    textarea.select();
-    
-    try {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text);
+    } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
         document.execCommand('copy');
-    } catch (err) {
-        console.error('Ошибка копирования:', err);
+        document.body.removeChild(textarea);
     }
-    
-    document.body.removeChild(textarea);
 }
 
 function showCopyNotification() {
@@ -167,10 +152,35 @@ function showSearchNotification(message, isError) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    detectDevice();
-    
     document.getElementById('questions-count').textContent = questionDatabase.length;
-    document.getElementById('search-button').addEventListener('click', () => {
+    
+    const searchButton = document.getElementById('search-button');
+    searchButton.addEventListener('click', handleSearch);
+    
+    document.getElementById('database-button').addEventListener('click', () => {
+        window.location.href = 'base.html';
+    });
+    
+    const inputFields = ['keyword1', 'keyword2', 'keyword3', 'keyword4'];
+    inputFields.forEach(fieldId => {
+        const input = document.getElementById(fieldId);
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleSearch();
+            }
+        });
+        
+        input.addEventListener('input', function() {
+            if (this.value.trim() !== '') {
+                const nextInput = inputFields[inputFields.indexOf(fieldId) + 1];
+                if (nextInput) {
+                    document.getElementById(nextInput).focus();
+                }
+            }
+        });
+    });
+    
+    function handleSearch() {
         const keyword1 = document.getElementById('keyword1').value.trim();
         const keyword2 = document.getElementById('keyword2').value.trim();
         const keyword3 = document.getElementById('keyword3').value.trim();
@@ -185,24 +195,16 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('keyword3').value = '';
         document.getElementById('keyword4').value = '';
         document.getElementById('keyword1').focus();
-    });
-    
-    document.getElementById('database-button').addEventListener('click', () => {
-        window.location.href = 'base.html';
-    });
-    
-    const inputFields = ['keyword1', 'keyword2', 'keyword3', 'keyword4'];
-    inputFields.forEach(fieldId => {
-        document.getElementById(fieldId).addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                document.getElementById('search-button').click();
-            }
+        
+        window.scrollTo({
+            top: document.getElementById('results').offsetTop - 20,
+            behavior: 'smooth'
         });
-    });
-    
-    if (document.body.classList.contains('mobile')) {
-        document.addEventListener('touchstart', function() {}, { passive: true });
     }
     
     document.getElementById('keyword1').focus();
+    
+    if ('ontouchstart' in window) {
+        document.body.classList.add('touch-device');
+    }
 });
