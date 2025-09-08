@@ -169,15 +169,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 handleSearch();
             }
         });
-        
-        input.addEventListener('input', function() {
-            if (this.value.trim() !== '') {
-                const nextInput = inputFields[inputFields.indexOf(fieldId) + 1];
-                if (nextInput) {
-                    document.getElementById(nextInput).focus();
-                }
-            }
-        });
     });
     
     function handleSearch() {
