@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>База вопросов</title>
+    <link rel="icon" href="favico.ico" type="image/x-icon">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>База вопросов</h1>
+        
+        <div class="pagination-controls">
+            <button id="prev-page" class="pagination-button">← Назад</button>
+            <span id="page-info"></span>
+            <button id="next-page" class="pagination-button">Вперед →</button>
+        </div>
+        
+        <div class="result-container" id="results"></div>
+        
+        <div id="copy-notification" class="copy-notification">Ответ скопирован!</div>
+        
+        <footer>
+            <button id="back-button" class="back-button">Назад к поиску</button>
+        </footer>
+    </div>
+
+    <script src="database.js"></script>
+    <script src="base.js"></script>
+</body>
+</html>
