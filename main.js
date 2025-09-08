@@ -1,22 +1,20 @@
-function searchQuestions(keywords, databaseType) {
+function detectDevice() {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+        document.body.classList.add('mobile');
+    } else {
+        document.body.classList.add('desktop');
+    }
+}
+
+function searchQuestions(keywords) {
     const results = [];
     const nonEmptyKeywords = keywords.filter(keyword => keyword.trim().length > 0);
     
     if (nonEmptyKeywords.length === 0) {
         return results;
     }
-    
-    let searchDatabase = [];
-    
-    if (databaseType === 'base') {
-        searchDatabase = questionDatabaseBase;
-    } else if (databaseType === 'excel') {
-        searchDatabase = questionDatabaseExcel;
-    } else if (databaseType === 'both') {
-        searchDatabase = [...questionDatabaseBase, ...questionDatabaseExcel];
-    }
-    
-    searchDatabase.forEach(item => {
+    questionDatabase.forEach(item => {
         const question = item.question.toLowerCase();
         let matchesAll = true;
         for (const keyword of nonEmptyKeywords) {
@@ -69,6 +67,7 @@ function displayResults(results, keywords) {
         noResults.className = 'no-results';
         noResults.innerHTML = '<h3>Ничего не найдено</h3><p>Скорее всего этого вопроса нет в базе, либо ошибка в фрагментах</p>';
         resultsContainer.appendChild(noResults);
+        showSearchNotification('Вопрос не найден!', true);
         return;
     }
     
@@ -90,13 +89,21 @@ function displayResults(results, keywords) {
         
         resultsContainer.appendChild(questionItem);
     });
-    
+    showSearchNotification(`Найдено вопросов: ${results.length}`, false);
     addCopyHandlers();
 }
 
 function addCopyHandlers() {
     const questionItems = document.querySelectorAll('.question-item');
     questionItems.forEach(item => {
+        item.addEventListener('touchstart', function() {
+            this.classList.add('hover-effect');
+        });
+        
+        item.addEventListener('touchend', function() {
+            this.classList.remove('hover-effect');
+        });
+        
         item.addEventListener('mouseenter', function() {
             this.classList.add('hover-effect');
         });
@@ -124,7 +131,13 @@ function copyToClipboard(text) {
     textarea.value = text;
     document.body.appendChild(textarea);
     textarea.select();
-    document.execCommand('copy');
+    
+    try {
+        document.execCommand('copy');
+    } catch (err) {
+        console.error('Ошибка копирования:', err);
+    }
+    
     document.body.removeChild(textarea);
 }
 
@@ -137,27 +150,45 @@ function showCopyNotification() {
     }, 2000);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('questions-count-base').textContent = questionDatabaseBase.length;
-    document.getElementById('questions-count-excel').textContent = questionDatabaseExcel.length;
+function showSearchNotification(message, isError) {
+    const notification = document.getElementById('search-notification');
+    notification.textContent = message;
+    notification.classList.remove('error');
     
+    if (isError) {
+        notification.classList.add('error');
+    }
+    
+    notification.classList.add('show');
+    
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 3000);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    detectDevice();
+    
+    document.getElementById('questions-count').textContent = questionDatabase.length;
     document.getElementById('search-button').addEventListener('click', () => {
         const keyword1 = document.getElementById('keyword1').value.trim();
         const keyword2 = document.getElementById('keyword2').value.trim();
         const keyword3 = document.getElementById('keyword3').value.trim();
         const keyword4 = document.getElementById('keyword4').value.trim();
         
-        const selectedDatabase = document.querySelector('input[name="database"]:checked').value;
         const keywords = [keyword1, keyword2, keyword3, keyword4];
-        const results = searchQuestions(keywords, selectedDatabase);
+        const results = searchQuestions(keywords);
         displayResults(results, keywords);
         
         document.getElementById('keyword1').value = '';
         document.getElementById('keyword2').value = '';
         document.getElementById('keyword3').value = '';
         document.getElementById('keyword4').value = '';
-        
         document.getElementById('keyword1').focus();
+    });
+    
+    document.getElementById('database-button').addEventListener('click', () => {
+        window.location.href = 'base.html';
     });
     
     const inputFields = ['keyword1', 'keyword2', 'keyword3', 'keyword4'];
@@ -168,5 +199,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    if (document.body.classList.contains('mobile')) {
+        document.addEventListener('touchstart', function() {}, { passive: true });
+    }
+    
     document.getElementById('keyword1').focus();
 });
