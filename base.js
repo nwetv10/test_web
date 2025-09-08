@@ -1,15 +1,5 @@
 let currentPage = 1;
-const itemsPerPage = 40;
-
-function detectDevice() {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    if (isMobile) {
-        document.body.classList.add('mobile');
-        itemsPerPage = 20;
-    } else {
-        document.body.classList.add('desktop');
-    }
-}
+const itemsPerPage = 20;
 
 function displayQuestions(page) {
     const resultsContainer = document.getElementById('results');
@@ -44,6 +34,11 @@ function displayQuestions(page) {
     document.getElementById('next-page').disabled = page === Math.ceil(questionDatabase.length / itemsPerPage);
     
     addCopyHandlers();
+    
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
 }
 
 function addCopyHandlers() {
@@ -57,15 +52,9 @@ function addCopyHandlers() {
             this.classList.remove('hover-effect');
         });
         
-        item.addEventListener('mouseenter', function() {
-            this.classList.add('hover-effect');
-        });
-        
-        item.addEventListener('mouseleave', function() {
-            this.classList.remove('hover-effect');
-        });
-        
-        item.addEventListener('click', function() {
+        item.addEventListener('click', function(e) {
+            if (e.target.tagName === 'MARK') return;
+            
             const answer = this.getAttribute('data-answer');
             copyToClipboard(answer);
             showCopyNotification();
@@ -80,18 +69,18 @@ function addCopyHandlers() {
 }
 
 function copyToClipboard(text) {
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    document.body.appendChild(textarea);
-    textarea.select();
-    
-    try {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text);
+    } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
         document.execCommand('copy');
-    } catch (err) {
-        console.error('Ошибка копирования:', err);
+        document.body.removeChild(textarea);
     }
-    
-    document.body.removeChild(textarea);
 }
 
 function showCopyNotification() {
@@ -104,7 +93,6 @@ function showCopyNotification() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    detectDevice();
     displayQuestions(currentPage);
     
     document.getElementById('prev-page').addEventListener('click', () => {
@@ -125,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = 'index.html';
     });
     
-    if (document.body.classList.contains('mobile')) {
-        document.addEventListener('touchstart', function() {}, { passive: true });
+    if ('ontouchstart' in window) {
+        document.body.classList.add('touch-device');
     }
 });
