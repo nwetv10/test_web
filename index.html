@@ -9,24 +9,6 @@
 </head>
 <body>
     <div class="container">
-        <div class="database-selector">
-            <h3>Выберите базу для поиска:</h3>
-            <div class="radio-group">
-                <label>
-                    <input type="radio" name="database" value="base" checked>
-                    База 1
-                </label>
-                <label>
-                    <input type="radio" name="database" value="excel">
-                    База 2
-                </label>
-                <label>
-                    <input type="radio" name="database" value="both">
-                    Общая база
-                </label>
-            </div>
-        </div>
-        
         <div class="search-container">
             <div class="keyword-inputs">
                 <input type="text" id="keyword1" placeholder="фрагмент 1">
@@ -44,15 +26,15 @@
         </div>
         
         <div id="copy-notification" class="copy-notification">Ответ скопирован!</div>
+        <div id="search-notification" class="search-notification"></div>
         
         <footer>
-            <p>Вопросов в первой базе: <span id="questions-count-base"></span></p>
-            <p>Вопросов в второй базе: <span id="questions-count-excel"></span></p>
+            <p>Вопросов в базе: <span id="questions-count"></span></p>
+            <button id="database-button" class="database-button">База вопросов</button>
         </footer>
     </div>
 
-    <script src="db_base.js"></script>
-    <script src="db_excel.js"></script>
+    <script src="database.js"></script>
     <script src="main.js"></script>
 </body>
 </html>
