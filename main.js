@@ -58,7 +58,6 @@ function displayResults(results, keywords) {
         noResults.className = 'no-results';
         noResults.innerHTML = '<h3>Ничего не найдено</h3><p>Скорее всего этого вопроса нет в базе, либо ошибка в фрагментах</p>';
         resultsContainer.appendChild(noResults);
-        showSearchNotification('Вопрос не найден!', true);
         return;
     }
     
@@ -80,7 +79,7 @@ function displayResults(results, keywords) {
         
         resultsContainer.appendChild(questionItem);
     });
-    showSearchNotification(`Найдено вопросов: ${results.length}`, false);
+    
     addCopyHandlers();
 }
 
@@ -133,22 +132,6 @@ function showCopyNotification() {
     setTimeout(() => {
         notification.classList.remove('show');
     }, 2000);
-}
-
-function showSearchNotification(message, isError) {
-    const notification = document.getElementById('search-notification');
-    notification.textContent = message;
-    notification.classList.remove('error');
-    
-    if (isError) {
-        notification.classList.add('error');
-    }
-    
-    notification.classList.add('show');
-    
-    setTimeout(() => {
-        notification.classList.remove('show');
-    }, 3000);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
