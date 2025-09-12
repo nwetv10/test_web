@@ -1,56 +1,5 @@
 let currentPage = 1;
 const itemsPerPage = 20;
-let questionDatabase = [];
-
-function loadQuestions() {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', 'test.txt', true);
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            const text = xhr.responseText;
-            parseQuestions(text);
-            displayQuestions(currentPage);
-        }
-    };
-    xhr.send();
-}
-
-function parseQuestions(text) {
-    const blocks = text.split('---------------\n\n');
-    questionDatabase = [];
-    
-    blocks.forEach(block => {
-        if (block.trim()) {
-            const lines = block.trim().split('\n');
-            if (lines.length >= 2) {
-                const question = lines[0].trim();
-                let answerLines = [];
-                let inAnswer = false;
-                
-                for (let i = 1; i < lines.length; i++) {
-                    const line = lines[i].trim();
-                    if (line.startsWith('Ответ:') || inAnswer) {
-                        inAnswer = true;
-                        if (line.startsWith('Ответ:')) {
-                            answerLines.push(line.substring(6).trim());
-                        } else {
-                            answerLines.push(line);
-                        }
-                    }
-                }
-                
-                const answer = answerLines.join('\n').trim();
-                
-                if (question && answer) {
-                    questionDatabase.push({
-                        question: question,
-                        answer: answer
-                    });
-                }
-            }
-        }
-    });
-}
 
 function displayQuestions(page) {
     const resultsContainer = document.getElementById('results');
@@ -144,7 +93,7 @@ function showCopyNotification() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    loadQuestions();
+    displayQuestions(currentPage);
     
     document.getElementById('prev-page').addEventListener('click', () => {
         if (currentPage > 1) {
