@@ -1,3 +1,51 @@
+let questionDatabase = [];
+
+function loadQuestions() {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'questions.txt', true);
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            const text = xhr.responseText;
+            parseQuestions(text);
+            document.getElementById('questions-count').textContent = questionDatabase.length;
+        }
+    };
+    xhr.send();
+}
+
+function parseQuestions(text) {
+    const questions = text.split('\n---------------\n\n');
+    questionDatabase = [];
+    
+    questions.forEach(block => {
+        if (block.trim()) {
+            const lines = block.split('\n');
+            if (lines.length >= 2) {
+                const question = lines[0].trim();
+                let answer = '';
+                
+                if (lines[1].startsWith('Ответ:')) {
+                    if (lines[1] === 'Ответ:') {
+                        answer = lines.slice(2).join('\n').trim();
+                    } else {
+                        answer = lines[1].substring(6).trim();
+                        if (lines.length > 2) {
+                            answer += '\n' + lines.slice(2).join('\n').trim();
+                        }
+                    }
+                }
+                
+                if (question && answer) {
+                    questionDatabase.push({
+                        question: question,
+                        answer: answer
+                    });
+                }
+            }
+        }
+    });
+}
+
 function searchQuestions(keywords) {
     const results = [];
     const nonEmptyKeywords = keywords.filter(keyword => keyword.trim().length > 0);
@@ -135,7 +183,7 @@ function showCopyNotification() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('questions-count').textContent = questionDatabase.length;
+    loadQuestions();
     
     const searchButton = document.getElementById('search-button');
     searchButton.addEventListener('click', handleSearch);
