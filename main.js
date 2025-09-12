@@ -14,26 +14,30 @@ function loadQuestions() {
 }
 
 function parseQuestions(text) {
-    const questions = text.split('\n---------------\n\n');
+    const blocks = text.split('---------------\n\n');
     questionDatabase = [];
     
-    questions.forEach(block => {
+    blocks.forEach(block => {
         if (block.trim()) {
-            const lines = block.split('\n');
+            const lines = block.trim().split('\n');
             if (lines.length >= 2) {
                 const question = lines[0].trim();
-                let answer = '';
+                let answerLines = [];
+                let inAnswer = false;
                 
-                if (lines[1].startsWith('Ответ:')) {
-                    if (lines[1] === 'Ответ:') {
-                        answer = lines.slice(2).join('\n').trim();
-                    } else {
-                        answer = lines[1].substring(6).trim();
-                        if (lines.length > 2) {
-                            answer += '\n' + lines.slice(2).join('\n').trim();
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (line.startsWith('Ответ:') || inAnswer) {
+                        inAnswer = true;
+                        if (line.startsWith('Ответ:')) {
+                            answerLines.push(line.substring(6).trim());
+                        } else {
+                            answerLines.push(line);
                         }
                     }
                 }
+                
+                const answer = answerLines.join('\n').trim();
                 
                 if (question && answer) {
                     questionDatabase.push({
