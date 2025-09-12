@@ -1,37 +1,103 @@
 let currentPage = 1;
-const itemsPerPage = 20;
+const itemsPerPage = 25;
+const maxGroupsPerPage = 6;
+let currentFilterMode = 'all';
+let groupedQuestions = [];
+
+function groupIdenticalQuestions() {
+    const groups = {};
+    
+    questionDatabase.forEach(item => {
+        const question = item.question.trim();
+        if (!groups[question]) {
+            groups[question] = [];
+        }
+        groups[question].push(item);
+    });
+    
+    return Object.values(groups)
+        .sort((a, b) => b.length - a.length)
+        .filter(group => group.length > 1);
+}
 
 function displayQuestions(page) {
     const resultsContainer = document.getElementById('results');
     resultsContainer.innerHTML = '';
     
-    const startIndex = (page - 1) * itemsPerPage;
-    const endIndex = Math.min(startIndex + itemsPerPage, questionDatabase.length);
+    let itemsToDisplay = [];
     
-    for (let i = startIndex; i < endIndex; i++) {
-        const item = questionDatabase[i];
-        const questionItem = document.createElement('div');
-        questionItem.className = 'question-item';
-        questionItem.setAttribute('data-answer', item.answer);
+    if (currentFilterMode === 'identical') {
+        const startIndex = (page - 1) * maxGroupsPerPage;
+        const endIndex = Math.min(startIndex + maxGroupsPerPage, groupedQuestions.length);
         
-        const questionText = document.createElement('div');
-        questionText.className = 'question-text';
-        questionText.textContent = item.question;
+        for (let i = startIndex; i < endIndex; i++) {
+            const group = groupedQuestions[i];
+            const groupContainer = document.createElement('div');
+            groupContainer.className = 'question-group';
+            
+            const groupHeader = document.createElement('div');
+            groupHeader.className = 'group-header';
+            groupHeader.textContent = `Вопрос (${group.length} варианта ответа):`;
+            groupContainer.appendChild(groupHeader);
+            
+            const questionText = document.createElement('div');
+            questionText.className = 'group-question-text';
+            questionText.textContent = group[0].question;
+            groupContainer.appendChild(questionText);
+            
+            group.forEach((item, index) => {
+                const questionItem = document.createElement('div');
+                questionItem.className = 'question-item group-item';
+                questionItem.setAttribute('data-answer', item.answer);
+                
+                const answerHeader = document.createElement('div');
+                answerHeader.className = 'answer-header';
+                answerHeader.textContent = `Ответ ${index + 1}:`;
+                questionItem.appendChild(answerHeader);
+                
+                const answerText = document.createElement('div');
+                answerText.className = 'answer-text';
+                answerText.innerHTML = item.answer.replace(/\n/g, '<br>');
+                questionItem.appendChild(answerText);
+                
+                groupContainer.appendChild(questionItem);
+            });
+            
+            resultsContainer.appendChild(groupContainer);
+        }
         
-        const answerText = document.createElement('div');
-        answerText.className = 'answer-text';
-        answerText.innerHTML = item.answer.replace(/\n/g, '<br>');
+        document.getElementById('page-info').textContent = `Страница ${page} из ${Math.ceil(groupedQuestions.length / maxGroupsPerPage)}`;
+        document.getElementById('prev-page').disabled = page === 1;
+        document.getElementById('next-page').disabled = page === Math.ceil(groupedQuestions.length / maxGroupsPerPage);
         
-        questionItem.appendChild(questionText);
-        questionItem.appendChild(answerText);
+    } else {
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, questionDatabase.length);
         
-        resultsContainer.appendChild(questionItem);
+        for (let i = startIndex; i < endIndex; i++) {
+            const item = questionDatabase[i];
+            const questionItem = document.createElement('div');
+            questionItem.className = 'question-item';
+            questionItem.setAttribute('data-answer', item.answer);
+            
+            const questionText = document.createElement('div');
+            questionText.className = 'question-text';
+            questionText.textContent = item.question;
+            
+            const answerText = document.createElement('div');
+            answerText.className = 'answer-text';
+            answerText.innerHTML = item.answer.replace(/\n/g, '<br>');
+            
+            questionItem.appendChild(questionText);
+            questionItem.appendChild(answerText);
+            
+            resultsContainer.appendChild(questionItem);
+        }
+        
+        document.getElementById('page-info').textContent = `Страница ${page} из ${Math.ceil(questionDatabase.length / itemsPerPage)}`;
+        document.getElementById('prev-page').disabled = page === 1;
+        document.getElementById('next-page').disabled = page === Math.ceil(questionDatabase.length / itemsPerPage);
     }
-    
-    document.getElementById('page-info').textContent = `Страница ${page} из ${Math.ceil(questionDatabase.length / itemsPerPage)}`;
-    
-    document.getElementById('prev-page').disabled = page === 1;
-    document.getElementById('next-page').disabled = page === Math.ceil(questionDatabase.length / itemsPerPage);
     
     addCopyHandlers();
     
@@ -92,7 +158,32 @@ function showCopyNotification() {
     }, 2000);
 }
 
+function toggleFilterMode() {
+    if (currentFilterMode === 'all') {
+        currentFilterMode = 'identical';
+        groupedQuestions = groupIdenticalQuestions();
+        currentPage = 1;
+        document.getElementById('filter-button').textContent = 'Показать все вопросы';
+        document.getElementById('filter-button').classList.add('active-filter');
+    } else {
+        currentFilterMode = 'all';
+        currentPage = 1;
+        document.getElementById('filter-button').textContent = 'Фильтр по одинаковым вопросам';
+        document.getElementById('filter-button').classList.remove('active-filter');
+    }
+    displayQuestions(currentPage);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    const paginationControls = document.querySelector('.pagination-controls');
+    const filterButton = document.createElement('button');
+    filterButton.id = 'filter-button';
+    filterButton.className = 'filter-button';
+    filterButton.textContent = 'Фильтр по одинаковым вопросам';
+    paginationControls.parentNode.insertBefore(filterButton, paginationControls.nextSibling);
+    
+    filterButton.addEventListener('click', toggleFilterMode);
+    
     displayQuestions(currentPage);
     
     document.getElementById('prev-page').addEventListener('click', () => {
@@ -103,7 +194,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     document.getElementById('next-page').addEventListener('click', () => {
-        if (currentPage < Math.ceil(questionDatabase.length / itemsPerPage)) {
+        const maxPage = currentFilterMode === 'identical' 
+            ? Math.ceil(groupedQuestions.length / maxGroupsPerPage)
+            : Math.ceil(questionDatabase.length / itemsPerPage);
+            
+        if (currentPage < maxPage) {
             currentPage++;
             displayQuestions(currentPage);
         }
