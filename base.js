@@ -1,5 +1,52 @@
 let currentPage = 1;
 const itemsPerPage = 20;
+let questionDatabase = [];
+
+function loadQuestions() {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'questions.txt', true);
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            const text = xhr.responseText;
+            parseQuestions(text);
+            displayQuestions(currentPage);
+        }
+    };
+    xhr.send();
+}
+
+function parseQuestions(text) {
+    const questions = text.split('\n---------------\n\n');
+    questionDatabase = [];
+    
+    questions.forEach(block => {
+        if (block.trim()) {
+            const lines = block.split('\n');
+            if (lines.length >= 2) {
+                const question = lines[0].trim();
+                let answer = '';
+                
+                if (lines[1].startsWith('Ответ:')) {
+                    if (lines[1] === 'Ответ:') {
+                        answer = lines.slice(2).join('\n').trim();
+                    } else {
+                        answer = lines[1].substring(6).trim();
+                        if (lines.length > 2) {
+                            answer += '\n' + lines.slice(2).join('\n').trim();
+                        }
+                    }
+                }
+                
+                if (question && answer) {
+                    questionDatabase.push({
+                        question: question,
+                        answer: answer
+                    });
+                }
+            }
+        }
+    });
+}
 
 function displayQuestions(page) {
     const resultsContainer = document.getElementById('results');
@@ -93,7 +140,7 @@ function showCopyNotification() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    displayQuestions(currentPage);
+    loadQuestions();
     
     document.getElementById('prev-page').addEventListener('click', () => {
         if (currentPage > 1) {
