@@ -23,6 +23,21 @@ function searchQuestions(keywords) {
     return results;
 }
 
+function groupIdenticalQuestions(questions) {
+    const groups = {};
+    
+    questions.forEach(item => {
+        const question = item.question.trim();
+        if (!groups[question]) {
+            groups[question] = [];
+        }
+        groups[question].push(item);
+    });
+    
+    return Object.values(groups)
+        .sort((a, b) => b.length - a.length);
+}
+
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
@@ -61,23 +76,62 @@ function displayResults(results, keywords) {
         return;
     }
     
-    results.forEach(item => {
-        const questionItem = document.createElement('div');
-        questionItem.className = 'question-item';
-        questionItem.setAttribute('data-answer', item.answer);
-        
-        const questionText = document.createElement('div');
-        questionText.className = 'question-text';
-        questionText.innerHTML = highlightText(item.question, keywords);
-        
-        const answerText = document.createElement('div');
-        answerText.className = 'answer-text';
-        answerText.innerHTML = highlightText(item.answer, keywords).replace(/\n/g, '<br>');
-        
-        questionItem.appendChild(questionText);
-        questionItem.appendChild(answerText);
-        
-        resultsContainer.appendChild(questionItem);
+    const groupedResults = groupIdenticalQuestions(results);
+    
+    groupedResults.forEach(group => {
+        if (group.length > 1) {
+            const groupContainer = document.createElement('div');
+            groupContainer.className = 'question-group';
+            
+            const groupHeader = document.createElement('div');
+            groupHeader.className = 'group-header';
+            groupHeader.textContent = `Вопрос (${group.length} варианта ответа):`;
+            groupContainer.appendChild(groupHeader);
+            
+            const questionText = document.createElement('div');
+            questionText.className = 'group-question-text';
+            questionText.innerHTML = highlightText(group[0].question, keywords);
+            groupContainer.appendChild(questionText);
+            
+            group.forEach((item, index) => {
+                const questionItem = document.createElement('div');
+                questionItem.className = 'question-item group-item';
+                questionItem.setAttribute('data-answer', item.answer);
+                
+                const answerHeader = document.createElement('div');
+                answerHeader.className = 'answer-header';
+                answerHeader.textContent = `Ответ ${index + 1}:`;
+                questionItem.appendChild(answerHeader);
+                
+                const answerText = document.createElement('div');
+                answerText.className = 'answer-text';
+                answerText.innerHTML = highlightText(item.answer, keywords).replace(/\n/g, '<br>');
+                questionItem.appendChild(answerText);
+                
+                groupContainer.appendChild(questionItem);
+            });
+            
+            resultsContainer.appendChild(groupContainer);
+        } else {
+            group.forEach(item => {
+                const questionItem = document.createElement('div');
+                questionItem.className = 'question-item';
+                questionItem.setAttribute('data-answer', item.answer);
+                
+                const questionText = document.createElement('div');
+                questionText.className = 'question-text';
+                questionText.innerHTML = highlightText(item.question, keywords);
+                
+                const answerText = document.createElement('div');
+                answerText.className = 'answer-text';
+                answerText.innerHTML = highlightText(item.answer, keywords).replace(/\n/g, '<br>');
+                
+                questionItem.appendChild(questionText);
+                questionItem.appendChild(answerText);
+                
+                resultsContainer.appendChild(questionItem);
+            });
+        }
     });
     
     addCopyHandlers();
