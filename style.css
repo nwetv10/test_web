@@ -256,20 +256,26 @@ mark {
     align-items: center;
     margin-bottom: 20px;
     gap: 10px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+}
+
+.bottom-pagination {
+    margin-top: 20px;
+    margin-bottom: 0;
 }
 
 .pagination-button {
-    padding: 14px 20px;
+    padding: 14px 15px;
     background: #3498db;
     color: white;
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 14px;
     transition: all 0.3s ease;
-    flex: 1;
-    min-width: 120px;
+    flex-shrink: 0;
+    min-width: auto;
+    white-space: nowrap;
 }
 
 .pagination-button:hover:not(:disabled) {
@@ -283,12 +289,14 @@ mark {
     transform: none;
 }
 
-#page-info {
-    font-size: 16px;
+#page-info, #bottom-page-info {
+    font-size: 14px;
     font-weight: 600;
     color: #2c3e50;
     text-align: center;
     flex: 1;
+    min-width: 80px;
+    white-space: nowrap;
 }
 
 .filter-button {
@@ -340,4 +348,98 @@ mark {
     color: #2c3e50;
     font-size: 16px;
     line-height: 1.4;
+}
+
+.floating-pagination {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 15px 25px;
+    border-radius: 50px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(52, 152, 219, 0.2);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.floating-pagination.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.floating-pagination-button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #3498db;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.floating-pagination-button:hover:not(:disabled) {
+    background: #2980b9;
+    transform: scale(1.1);
+}
+
+.floating-pagination-button:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+#floating-page-info {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    min-width: 90px;
+    text-align: center;
+}
+
+@media (max-width: 480px) {
+    .pagination-controls {
+        gap: 5px;
+    }
+    
+    .pagination-button {
+        padding: 12px 10px;
+        font-size: 12px;
+    }
+    
+    #page-info, #bottom-page-info {
+        font-size: 12px;
+        min-width: 70px;
+    }
+    
+    .floating-pagination {
+        bottom: 15px;
+        padding: 12px 20px;
+        gap: 12px;
+    }
+    
+    .floating-pagination-button {
+        width: 45px;
+        height: 45px;
+        font-size: 16px;
+    }
+    
+    #floating-page-info {
+        font-size: 14px;
+        min-width: 80px;
+    }
 }
