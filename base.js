@@ -227,42 +227,6 @@ function navigateToPage(direction) {
     }
 }
 
-function addButtonClickEffects() {
-    const buttons = document.querySelectorAll('.pagination-button, .floating-pagination-button');
-    
-    buttons.forEach(button => {
-        button.addEventListener('mousedown', function() {
-            if (!this.disabled) {
-                this.style.transform = 'scale(0.95)';
-            }
-        });
-        
-        button.addEventListener('mouseup', function() {
-            if (!this.disabled) {
-                this.style.transform = '';
-            }
-        });
-        
-        button.addEventListener('mouseleave', function() {
-            if (!this.disabled) {
-                this.style.transform = '';
-            }
-        });
-        
-        button.addEventListener('touchstart', function() {
-            if (!this.disabled) {
-                this.style.transform = 'scale(0.95)';
-            }
-        });
-        
-        button.addEventListener('touchend', function() {
-            if (!this.disabled) {
-                this.style.transform = '';
-            }
-        });
-    });
-}
-
 document.addEventListener('DOMContentLoaded', function() {
     const paginationControls = document.querySelector('.pagination-controls');
     const filterButton = document.createElement('button');
@@ -292,6 +256,4 @@ document.addEventListener('DOMContentLoaded', function() {
     
     window.addEventListener('scroll', toggleFloatingPagination);
     toggleFloatingPagination();
-    
-    addButtonClickEffects();
 });
