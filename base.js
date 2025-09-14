@@ -20,11 +20,58 @@ function groupIdenticalQuestions() {
         .filter(group => group.length > 1);
 }
 
+function updateAllPagination() {
+    const pageInfo = document.getElementById('page-info');
+    const floatingInfo = document.getElementById('floating-page-info');
+    const bottomInfo = document.getElementById('bottom-page-info');
+    const prevButton = document.getElementById('prev-page');
+    const nextButton = document.getElementById('next-page');
+    const floatingPrev = document.getElementById('floating-prev');
+    const floatingNext = document.getElementById('floating-next');
+    const bottomPrev = document.getElementById('bottom-prev-page');
+    const bottomNext = document.getElementById('bottom-next-page');
+    
+    let totalPages, currentText;
+    
+    if (currentFilterMode === 'identical') {
+        totalPages = Math.ceil(groupedQuestions.length / maxGroupsPerPage);
+        currentText = `Страница ${currentPage} из ${totalPages}`;
+    } else {
+        totalPages = Math.ceil(questionDatabase.length / itemsPerPage);
+        currentText = `Страница ${currentPage} из ${totalPages}`;
+    }
+    
+    pageInfo.textContent = currentText;
+    floatingInfo.textContent = `${currentPage}/${totalPages}`;
+    bottomInfo.textContent = currentText;
+    
+    const isFirstPage = currentPage === 1;
+    const isLastPage = currentPage === totalPages;
+    
+    prevButton.disabled = isFirstPage;
+    nextButton.disabled = isLastPage;
+    floatingPrev.disabled = isFirstPage;
+    floatingNext.disabled = isLastPage;
+    bottomPrev.disabled = isFirstPage;
+    bottomNext.disabled = isLastPage;
+}
+
+function toggleFloatingPagination() {
+    const floatingPagination = document.querySelector('.floating-pagination');
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    
+    if (scrollTop > 200 && scrollTop + windowHeight < documentHeight - 100) {
+        floatingPagination.classList.add('visible');
+    } else {
+        floatingPagination.classList.remove('visible');
+    }
+}
+
 function displayQuestions(page) {
     const resultsContainer = document.getElementById('results');
     resultsContainer.innerHTML = '';
-    
-    let itemsToDisplay = [];
     
     if (currentFilterMode === 'identical') {
         const startIndex = (page - 1) * maxGroupsPerPage;
@@ -65,11 +112,6 @@ function displayQuestions(page) {
             
             resultsContainer.appendChild(groupContainer);
         }
-        
-        document.getElementById('page-info').textContent = `Страница ${page} из ${Math.ceil(groupedQuestions.length / maxGroupsPerPage)}`;
-        document.getElementById('prev-page').disabled = page === 1;
-        document.getElementById('next-page').disabled = page === Math.ceil(groupedQuestions.length / maxGroupsPerPage);
-        
     } else {
         const startIndex = (page - 1) * itemsPerPage;
         const endIndex = Math.min(startIndex + itemsPerPage, questionDatabase.length);
@@ -93,12 +135,9 @@ function displayQuestions(page) {
             
             resultsContainer.appendChild(questionItem);
         }
-        
-        document.getElementById('page-info').textContent = `Страница ${page} из ${Math.ceil(questionDatabase.length / itemsPerPage)}`;
-        document.getElementById('prev-page').disabled = page === 1;
-        document.getElementById('next-page').disabled = page === Math.ceil(questionDatabase.length / itemsPerPage);
     }
     
+    updateAllPagination();
     addCopyHandlers();
     
     window.scrollTo({
@@ -174,6 +213,20 @@ function toggleFilterMode() {
     displayQuestions(currentPage);
 }
 
+function navigateToPage(direction) {
+    const maxPage = currentFilterMode === 'identical' 
+        ? Math.ceil(groupedQuestions.length / maxGroupsPerPage)
+        : Math.ceil(questionDatabase.length / itemsPerPage);
+    
+    if (direction === 'prev' && currentPage > 1) {
+        currentPage--;
+        displayQuestions(currentPage);
+    } else if (direction === 'next' && currentPage < maxPage) {
+        currentPage++;
+        displayQuestions(currentPage);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const paginationControls = document.querySelector('.pagination-controls');
     const filterButton = document.createElement('button');
@@ -186,23 +239,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     displayQuestions(currentPage);
     
-    document.getElementById('prev-page').addEventListener('click', () => {
-        if (currentPage > 1) {
-            currentPage--;
-            displayQuestions(currentPage);
-        }
-    });
-    
-    document.getElementById('next-page').addEventListener('click', () => {
-        const maxPage = currentFilterMode === 'identical' 
-            ? Math.ceil(groupedQuestions.length / maxGroupsPerPage)
-            : Math.ceil(questionDatabase.length / itemsPerPage);
-            
-        if (currentPage < maxPage) {
-            currentPage++;
-            displayQuestions(currentPage);
-        }
-    });
+    document.getElementById('prev-page').addEventListener('click', () => navigateToPage('prev'));
+    document.getElementById('next-page').addEventListener('click', () => navigateToPage('next'));
+    document.getElementById('floating-prev').addEventListener('click', () => navigateToPage('prev'));
+    document.getElementById('floating-next').addEventListener('click', () => navigateToPage('next'));
+    document.getElementById('bottom-prev-page').addEventListener('click', () => navigateToPage('prev'));
+    document.getElementById('bottom-next-page').addEventListener('click', () => navigateToPage('next'));
     
     document.getElementById('back-button').addEventListener('click', () => {
         window.location.href = 'index.html';
@@ -211,4 +253,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if ('ontouchstart' in window) {
         document.body.classList.add('touch-device');
     }
+    
+    window.addEventListener('scroll', toggleFloatingPagination);
+    toggleFloatingPagination();
 });
