@@ -1,3 +1,16 @@
+let NotifPositionX = 'right';     /* left,center,right */
+let NotifPositionY = 'top';   /* bottom,middle,top */
+let NotifColorText = '#FFFFFF';
+let NotifColorBg = '#00BE3B';
+
+function initNotification() {
+    const notification = document.getElementById('copy-notification');
+    notification.className = 'copy-notification';
+    notification.classList.add(NotifPositionX, NotifPositionY);
+    notification.style.color = NotifColorText;
+    notification.style.backgroundColor = NotifColorBg;
+}
+
 function searchQuestions(keywords) {
     const results = [];
     const nonEmptyKeywords = keywords.filter(keyword => keyword.trim().length > 0);
@@ -71,7 +84,7 @@ function displayResults(results, keywords) {
     if (results.length === 0) {
         const noResults = document.createElement('div');
         noResults.className = 'no-results';
-        noResults.innerHTML = '<h3>Ничего не найдено</h3><p>Скорее всего этого вопроса нет в базе, либо ошибка в фрагментах</p>';
+        noResults.innerHTML = '<h3>Ничего не найдено</h3><p>Скорее всего этого вопроса нет в базе, либо ошибка в фрагмента</p>';
         resultsContainer.appendChild(noResults);
         return;
     }
@@ -89,26 +102,27 @@ function displayResults(results, keywords) {
             groupContainer.appendChild(groupHeader);
             
             const questionText = document.createElement('div');
-            questionText.className = 'group-question-text';
+            questionText.className = 'question-text group-question-text';
             questionText.innerHTML = highlightText(group[0].question, keywords);
+            questionText.setAttribute('data-question', group[0].question);
             groupContainer.appendChild(questionText);
             
             group.forEach((item, index) => {
-                const questionItem = document.createElement('div');
-                questionItem.className = 'question-item group-item';
-                questionItem.setAttribute('data-answer', item.answer);
+                const answerContainer = document.createElement('div');
+                answerContainer.className = 'answer-container group-item';
                 
                 const answerHeader = document.createElement('div');
                 answerHeader.className = 'answer-header';
                 answerHeader.textContent = `Ответ ${index + 1}:`;
-                questionItem.appendChild(answerHeader);
+                answerContainer.appendChild(answerHeader);
                 
                 const answerText = document.createElement('div');
                 answerText.className = 'answer-text';
                 answerText.innerHTML = highlightText(item.answer, keywords).replace(/\n/g, '<br>');
-                questionItem.appendChild(answerText);
+                answerText.setAttribute('data-answer', item.answer);
+                answerContainer.appendChild(answerText);
                 
-                groupContainer.appendChild(questionItem);
+                groupContainer.appendChild(answerContainer);
             });
             
             resultsContainer.appendChild(groupContainer);
@@ -116,15 +130,16 @@ function displayResults(results, keywords) {
             group.forEach(item => {
                 const questionItem = document.createElement('div');
                 questionItem.className = 'question-item';
-                questionItem.setAttribute('data-answer', item.answer);
                 
                 const questionText = document.createElement('div');
                 questionText.className = 'question-text';
                 questionText.innerHTML = highlightText(item.question, keywords);
+                questionText.setAttribute('data-question', item.question);
                 
                 const answerText = document.createElement('div');
                 answerText.className = 'answer-text';
                 answerText.innerHTML = highlightText(item.answer, keywords).replace(/\n/g, '<br>');
+                answerText.setAttribute('data-answer', item.answer);
                 
                 questionItem.appendChild(questionText);
                 questionItem.appendChild(answerText);
@@ -138,25 +153,33 @@ function displayResults(results, keywords) {
 }
 
 function addCopyHandlers() {
-    const questionItems = document.querySelectorAll('.question-item');
-    questionItems.forEach(item => {
-        item.addEventListener('touchstart', function() {
-            this.classList.add('hover-effect');
+    const questionTexts = document.querySelectorAll('.question-text');
+    const answerTexts = document.querySelectorAll('.answer-text');
+    
+    questionTexts.forEach(text => {
+        text.addEventListener('click', function(e) {
+            if (e.target.tagName === 'MARK') return;
+            
+            const question = this.getAttribute('data-question');
+            copyToClipboard(question);
+            showCopyNotification('Вопрос скопирован!');
+            
+            this.classList.add('click-effect');
+            setTimeout(() => {
+                this.classList.remove('click-effect');
+            }, 600);
         });
-        
-        item.addEventListener('touchend', function() {
-            this.classList.remove('hover-effect');
-        });
-        
-        item.addEventListener('click', function(e) {
+    });
+    
+    answerTexts.forEach(text => {
+        text.addEventListener('click', function(e) {
             if (e.target.tagName === 'MARK') return;
             
             const answer = this.getAttribute('data-answer');
             copyToClipboard(answer);
-            showCopyNotification();
+            showCopyNotification('Ответ скопирован!');
             
             this.classList.add('click-effect');
-            
             setTimeout(() => {
                 this.classList.remove('click-effect');
             }, 600);
@@ -179,16 +202,73 @@ function copyToClipboard(text) {
     }
 }
 
-function showCopyNotification() {
+function showCopyNotification(message) {
     const notification = document.getElementById('copy-notification');
-    notification.classList.add('show');
     
-    setTimeout(() => {
+    if (!notification.classList.contains('initialized')) {
+        notification.className = 'copy-notification';
+        notification.classList.add(NotifPositionX, NotifPositionY, 'initialized');
+        notification.style.color = NotifColorText;
+        notification.style.backgroundColor = NotifColorBg;
+    }
+    
+    if (notification.classList.contains('show')) {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            notification.textContent = message;
+            notification.classList.add('show');
+        }, 300);
+    } else {
+        notification.textContent = message;
+        notification.classList.add('show');
+    }
+    
+    if (window.copyNotificationTimeout) {
+        clearTimeout(window.copyNotificationTimeout);
+    }
+    
+    window.copyNotificationTimeout = setTimeout(() => {
         notification.classList.remove('show');
     }, 2000);
 }
 
+function updateInputControls() {
+    const inputCount = document.querySelectorAll('.keyword-input').length;
+    document.getElementById('remove-input-button').disabled = inputCount <= 1;
+    document.getElementById('add-input-button').disabled = inputCount >= 6;
+}
+
+function addKeywordInput() {
+    const container = document.getElementById('keyword-inputs-container');
+    if (container.children.length >= 6) return;
+    
+    const newInput = document.createElement('input');
+    newInput.type = 'text';
+    newInput.className = 'keyword-input';
+    newInput.placeholder = `Фрагмент ${container.children.length + 1}`;
+    newInput.autocomplete = 'off';
+    
+    newInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            handleSearch();
+        }
+    });
+    
+    container.appendChild(newInput);
+    updateInputControls();
+}
+
+function removeKeywordInput() {
+    const container = document.getElementById('keyword-inputs-container');
+    if (container.children.length <= 1) return;
+    
+    container.removeChild(container.lastChild);
+    updateInputControls();
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    initNotification();
+    
     document.getElementById('questions-count').textContent = questionDatabase.length;
     
     const searchButton = document.getElementById('search-button');
@@ -198,31 +278,22 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = 'base.html';
     });
     
-    const inputFields = ['keyword1', 'keyword2', 'keyword3', 'keyword4'];
-    inputFields.forEach(fieldId => {
-        const input = document.getElementById(fieldId);
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                handleSearch();
-            }
-        });
-    });
+    document.getElementById('add-input-button').addEventListener('click', addKeywordInput);
+    document.getElementById('remove-input-button').addEventListener('click', removeKeywordInput);
+    
+    updateInputControls();
     
     function handleSearch() {
-        const keyword1 = document.getElementById('keyword1').value.trim();
-        const keyword2 = document.getElementById('keyword2').value.trim();
-        const keyword3 = document.getElementById('keyword3').value.trim();
-        const keyword4 = document.getElementById('keyword4').value.trim();
+        const inputs = document.querySelectorAll('.keyword-input');
+        const keywords = Array.from(inputs).map(input => input.value.trim());
         
-        const keywords = [keyword1, keyword2, keyword3, keyword4];
         const results = searchQuestions(keywords);
         displayResults(results, keywords);
         
-        document.getElementById('keyword1').value = '';
-        document.getElementById('keyword2').value = '';
-        document.getElementById('keyword3').value = '';
-        document.getElementById('keyword4').value = '';
-        document.getElementById('keyword1').focus();
+        inputs.forEach(input => {
+            input.value = '';
+        });
+        document.querySelector('.keyword-input').focus();
         
         window.scrollTo({
             top: document.getElementById('results').offsetTop - 20,
@@ -230,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    document.getElementById('keyword1').focus();
+    document.querySelector('.keyword-input').focus();
     
     if ('ontouchstart' in window) {
         document.body.classList.add('touch-device');
