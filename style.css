@@ -286,31 +286,30 @@ mark {
 .pagination-button:disabled {
     background: #95a5a6;
     cursor: not-allowed;
-    transform: none;
+    transform: none !important;
 }
 
-#page-info, #bottom-page-info {
-    font-size: 14px;
-    font-weight: 600;
+#page-info {
+    font-weight: bold;
     color: #2c3e50;
     text-align: center;
-    flex: 1;
-    min-width: 80px;
-    white-space: nowrap;
+    flex-grow: 1;
+    margin: 0 10px;
+    font-size: 14px;
 }
 
 .filter-button {
-    padding: 14px 20px;
+    padding: 14px 15px;
     background: #9b59b6;
     color: white;
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 14px;
     transition: all 0.3s ease;
     margin-bottom: 20px;
     width: 100%;
-    font-weight: 600;
+    text-align: center;
 }
 
 .filter-button:hover {
@@ -325,29 +324,45 @@ mark {
 }
 
 .question-group {
-    background: #f0f8ff;
-    border: 2px solid #3498db;
+    background: #fff;
+    border: 2px solid #e8f4fc;
     border-radius: 12px;
     padding: 15px;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .group-header {
     font-weight: bold;
-    font-size: 16px;
     color: #2c3e50;
     margin-bottom: 10px;
+    font-size: 16px;
     padding-bottom: 8px;
-    border-bottom: 2px dashed #3498db;
+    border-bottom: 2px solid #e8f4fc;
 }
 
 .group-question-text {
     font-weight: bold;
-    margin-bottom: 15px;
     color: #2c3e50;
-    font-size: 16px;
+    margin-bottom: 15px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #9b59b6;
+    font-size: 15px;
     line-height: 1.4;
+}
+
+.group-item {
+    border-left: 4px solid #9b59b6;
+    margin-bottom: 12px;
+}
+
+.group-item .answer-header {
+    font-weight: bold;
+    color: #7f8c8d;
+    margin-bottom: 8px;
+    font-size: 14px;
 }
 
 .floating-pagination {
@@ -355,16 +370,14 @@ mark {
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
+    background: white;
+    padding: 12px 20px;
+    border-radius: 25px;
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
     display: flex;
     align-items: center;
     gap: 15px;
-    background: rgba(255, 255, 255, 0.95);
-    padding: 15px 25px;
-    border-radius: 50px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     z-index: 1000;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(52, 152, 219, 0.2);
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
@@ -376,70 +389,167 @@ mark {
 }
 
 .floating-pagination-button {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
+    padding: 10px 15px;
     background: #3498db;
     color: white;
     border: none;
+    border-radius: 20px;
     cursor: pointer;
-    font-size: 18px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    font-size: 14px;
     transition: all 0.3s ease;
-    flex-shrink: 0;
+    min-width: 50px;
 }
 
 .floating-pagination-button:hover:not(:disabled) {
     background: #2980b9;
-    transform: scale(1.1);
+    transform: translateY(-2px);
 }
 
 .floating-pagination-button:disabled {
     background: #95a5a6;
     cursor: not-allowed;
-    transform: none;
+    transform: none !important;
 }
 
 #floating-page-info {
-    font-size: 16px;
-    font-weight: 600;
+    font-weight: bold;
     color: #2c3e50;
-    min-width: 90px;
+    margin: 0 5px;
+    font-size: 14px;
+    min-width: 40px;
     text-align: center;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+        border-radius: 10px;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+        margin-bottom: 12px;
+    }
+    
+    .keyword-inputs {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .keyword-inputs input {
+        padding: 14px;
+        font-size: 16px;
+    }
+    
+    #search-button {
+        padding: 16px;
+        font-size: 16px;
+    }
+    
+    .question-item {
+        padding: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .question-text {
+        font-size: 15px;
+    }
+    
+    .answer-text {
+        font-size: 13px;
+        padding: 10px;
+    }
+    
     .pagination-controls {
-        gap: 5px;
+        flex-wrap: wrap;
+        gap: 8px;
     }
     
     .pagination-button {
-        padding: 12px 10px;
-        font-size: 12px;
+        padding: 12px;
+        font-size: 13px;
+        flex: 1;
+        min-width: 80px;
     }
     
-    #page-info, #bottom-page-info {
+    #page-info {
+        font-size: 13px;
+        margin: 0 8px;
+        order: 3;
+        flex-basis: 100%;
+        text-align: center;
+        margin-top: 8px;
+    }
+    
+    .filter-button {
+        padding: 12px;
+        font-size: 13px;
+    }
+    
+    .floating-pagination {
+        padding: 10px 15px;
+        gap: 12px;
+    }
+    
+    .floating-pagination-button {
+        padding: 8px 12px;
+        font-size: 13px;
+        min-width: 45px;
+    }
+    
+    #floating-page-info {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+    
+    .container {
+        padding: 12px;
+        border-radius: 8px;
+    }
+    
+    h1 {
+        font-size: 1.3rem;
+    }
+    
+    .keyword-inputs input {
+        padding: 12px;
+    }
+    
+    #search-button {
+        padding: 14px;
+    }
+    
+    .pagination-button {
+        padding: 10px;
         font-size: 12px;
         min-width: 70px;
     }
     
     .floating-pagination {
         bottom: 15px;
-        padding: 12px 20px;
-        gap: 12px;
+        padding: 8px 12px;
     }
     
     .floating-pagination-button {
-        width: 45px;
-        height: 45px;
-        font-size: 16px;
+        padding: 6px 10px;
+        font-size: 12px;
+        min-width: 40px;
     }
-    
-    #floating-page-info {
-        font-size: 14px;
-        min-width: 80px;
-    }
+}
+
+.touch-device .question-item:hover {
+    transform: none;
+}
+
+.touch-device .pagination-button:hover:not(:disabled) {
+    transform: none;
+}
+
+.touch-device .floating-pagination-button:hover:not(:disabled) {
+    transform: none;
 }
