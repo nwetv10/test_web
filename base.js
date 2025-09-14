@@ -1,8 +1,44 @@
+let NotifPositionX = 'right';     /* left,center,right */
+let NotifPositionY = 'top';   /* bottom,middle,top */
+let NotifColorText = '#FFFFFF';
+let NotifColorBg = '#00BE3B';
+
 let currentPage = 1;
 const itemsPerPage = 25;
 const maxGroupsPerPage = 6;
 let currentFilterMode = 'all';
 let groupedQuestions = [];
+
+const sections = [
+    "ФЗ-230",
+    "Законодательство",
+    "Соблюдение ФЗ 230",
+    "Процедуры и инструкции",
+    "Стандарты обслуживания по телефону",
+    "Правила применения аргументации",
+    "Правила применения аргументации 1-30",
+    "Правила применения аргументации ипотека, авто",
+    "Правила применения аргументации 31-150",
+    "Правила применения аргументации 150+",
+    "Беззалоговые продукты Банка",
+    "Залоговые продукты Банка",
+    "Инструкция о работе с проблемной задолженностью по кредитам физических лиц",
+    "Кейсовая ситуация",
+    "Кейсовая ситуация (150+)",
+    "СУБО",
+    "ВТБ Про",
+    "ЦФТ 2.0",
+    "OW-Analytic",
+    "Одинаковые вопросы"
+];
+
+function initNotification() {
+    const notification = document.getElementById('copy-notification');
+    notification.className = 'copy-notification';
+    notification.classList.add(NotifPositionX, NotifPositionY, 'initialized');
+    notification.style.color = NotifColorText;
+    notification.style.backgroundColor = NotifColorBg;
+}
 
 function groupIdenticalQuestions() {
     const groups = {};
@@ -20,6 +56,20 @@ function groupIdenticalQuestions() {
         .filter(group => group.length > 1);
 }
 
+function filterQuestionsBySection(section) {
+    return questionDatabase.filter(item => {
+        if (section === "ЦФТ 2.0") {
+            return item.question.startsWith("ЦФТ 2.0") || 
+                   item.question.startsWith("ЦФТ 2.0.");
+        }
+        const dotIndex = item.question.indexOf('.');
+        if (dotIndex === -1) return false;
+        
+        const prefix = item.question.substring(0, dotIndex).trim();
+        return prefix === section;
+    });
+}
+
 function updateAllPagination() {
     const pageInfo = document.getElementById('page-info');
     const floatingInfo = document.getElementById('floating-page-info');
@@ -31,19 +81,26 @@ function updateAllPagination() {
     const bottomPrev = document.getElementById('bottom-prev-page');
     const bottomNext = document.getElementById('bottom-next-page');
     
-    let totalPages, currentText;
+    let totalPages, currentText, totalItems;
     
     if (currentFilterMode === 'identical') {
-        totalPages = Math.ceil(groupedQuestions.length / maxGroupsPerPage);
-        currentText = `Страница ${currentPage} из ${totalPages}`;
+        totalItems = groupedQuestions.length;
+        totalPages = Math.ceil(totalItems / maxGroupsPerPage);
+        currentText = `Страница ${currentPage} из ${totalPages}\n(групп: ${totalItems})`;
+    } else if (currentFilterMode !== 'all') {
+        const filteredQuestions = filterQuestionsBySection(currentFilterMode);
+        totalItems = filteredQuestions.length;
+        totalPages = Math.ceil(totalItems / itemsPerPage);
+        currentText = `Страница ${currentPage} из ${totalPages}\n(вопросов: ${totalItems})`;
     } else {
-        totalPages = Math.ceil(questionDatabase.length / itemsPerPage);
-        currentText = `Страница ${currentPage} из ${totalPages}`;
+        totalItems = questionDatabase.length;
+        totalPages = Math.ceil(totalItems / itemsPerPage);
+        currentText = `Страница ${currentPage} из ${totalPages}\n(вопросов: ${totalItems})`;
     }
     
-    pageInfo.textContent = currentText;
+    pageInfo.innerHTML = currentText;
     floatingInfo.textContent = `${currentPage}/${totalPages}`;
-    bottomInfo.textContent = currentText;
+    bottomInfo.innerHTML = currentText;
     
     const isFirstPage = currentPage === 1;
     const isLastPage = currentPage === totalPages;
@@ -88,29 +145,55 @@ function displayQuestions(page) {
             groupContainer.appendChild(groupHeader);
             
             const questionText = document.createElement('div');
-            questionText.className = 'group-question-text';
+            questionText.className = 'question-text group-question-text';
             questionText.textContent = group[0].question;
+            questionText.setAttribute('data-question', group[0].question);
             groupContainer.appendChild(questionText);
             
             group.forEach((item, index) => {
-                const questionItem = document.createElement('div');
-                questionItem.className = 'question-item group-item';
-                questionItem.setAttribute('data-answer', item.answer);
+                const answerContainer = document.createElement('div');
+                answerContainer.className = 'answer-container group-item';
                 
                 const answerHeader = document.createElement('div');
                 answerHeader.className = 'answer-header';
                 answerHeader.textContent = `Ответ ${index + 1}:`;
-                questionItem.appendChild(answerHeader);
+                answerContainer.appendChild(answerHeader);
                 
                 const answerText = document.createElement('div');
                 answerText.className = 'answer-text';
                 answerText.innerHTML = item.answer.replace(/\n/g, '<br>');
-                questionItem.appendChild(answerText);
+                answerText.setAttribute('data-answer', item.answer);
+                answerContainer.appendChild(answerText);
                 
-                groupContainer.appendChild(questionItem);
+                groupContainer.appendChild(answerContainer);
             });
             
             resultsContainer.appendChild(groupContainer);
+        }
+    } else if (currentFilterMode !== 'all') {
+        const filteredQuestions = filterQuestionsBySection(currentFilterMode);
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, filteredQuestions.length);
+        
+        for (let i = startIndex; i < endIndex; i++) {
+            const item = filteredQuestions[i];
+            const questionItem = document.createElement('div');
+            questionItem.className = 'question-item';
+            
+            const questionText = document.createElement('div');
+            questionText.className = 'question-text';
+            questionText.textContent = item.question;
+            questionText.setAttribute('data-question', item.question);
+            
+            const answerText = document.createElement('div');
+            answerText.className = 'answer-text';
+            answerText.innerHTML = item.answer.replace(/\n/g, '<br>');
+            answerText.setAttribute('data-answer', item.answer);
+            
+            questionItem.appendChild(questionText);
+            questionItem.appendChild(answerText);
+            
+            resultsContainer.appendChild(questionItem);
         }
     } else {
         const startIndex = (page - 1) * itemsPerPage;
@@ -120,15 +203,16 @@ function displayQuestions(page) {
             const item = questionDatabase[i];
             const questionItem = document.createElement('div');
             questionItem.className = 'question-item';
-            questionItem.setAttribute('data-answer', item.answer);
             
             const questionText = document.createElement('div');
             questionText.className = 'question-text';
             questionText.textContent = item.question;
+            questionText.setAttribute('data-question', item.question);
             
             const answerText = document.createElement('div');
             answerText.className = 'answer-text';
             answerText.innerHTML = item.answer.replace(/\n/g, '<br>');
+            answerText.setAttribute('data-answer', item.answer);
             
             questionItem.appendChild(questionText);
             questionItem.appendChild(answerText);
@@ -147,25 +231,33 @@ function displayQuestions(page) {
 }
 
 function addCopyHandlers() {
-    const questionItems = document.querySelectorAll('.question-item');
-    questionItems.forEach(item => {
-        item.addEventListener('touchstart', function() {
-            this.classList.add('hover-effect');
+    const questionTexts = document.querySelectorAll('.question-text');
+    const answerTexts = document.querySelectorAll('.answer-text');
+    
+    questionTexts.forEach(text => {
+        text.addEventListener('click', function(e) {
+            if (e.target.tagName === 'MARK') return;
+            
+            const question = this.getAttribute('data-question');
+            copyToClipboard(question);
+            showCopyNotification('Вопрос скопирован!');
+            
+            this.classList.add('click-effect');
+            setTimeout(() => {
+                this.classList.remove('click-effect');
+            }, 600);
         });
-        
-        item.addEventListener('touchend', function() {
-            this.classList.remove('hover-effect');
-        });
-        
-        item.addEventListener('click', function(e) {
+    });
+    
+    answerTexts.forEach(text => {
+        text.addEventListener('click', function(e) {
             if (e.target.tagName === 'MARK') return;
             
             const answer = this.getAttribute('data-answer');
             copyToClipboard(answer);
-            showCopyNotification();
+            showCopyNotification('Ответ скопирован!');
             
             this.classList.add('click-effect');
-            
             setTimeout(() => {
                 this.classList.remove('click-effect');
             }, 600);
@@ -188,35 +280,64 @@ function copyToClipboard(text) {
     }
 }
 
-function showCopyNotification() {
+function showCopyNotification(message) {
     const notification = document.getElementById('copy-notification');
-    notification.classList.add('show');
     
-    setTimeout(() => {
+    if (!notification.classList.contains('initialized')) {
+        notification.className = 'copy-notification';
+        notification.classList.add(NotifPositionX, NotifPositionY, 'initialized');
+        notification.style.color = NotifColorText;
+        notification.style.backgroundColor = NotifColorBg;
+    }
+    
+    if (notification.classList.contains('show')) {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            notification.textContent = message;
+            notification.classList.add('show');
+        }, 300);
+    } else {
+        notification.textContent = message;
+        notification.classList.add('show');
+    }
+    
+    if (window.copyNotificationTimeout) {
+        clearTimeout(window.copyNotificationTimeout);
+    }
+    
+    window.copyNotificationTimeout = setTimeout(() => {
         notification.classList.remove('show');
     }, 2000);
 }
 
-function toggleFilterMode() {
-    if (currentFilterMode === 'all') {
+function changeFilterMode() {
+    const filterSelect = document.getElementById('filter-select');
+    const selectedValue = filterSelect.value;
+    
+    if (selectedValue === 'identical') {
         currentFilterMode = 'identical';
         groupedQuestions = groupIdenticalQuestions();
-        currentPage = 1;
-        document.getElementById('filter-button').textContent = 'Показать все вопросы';
-        document.getElementById('filter-button').classList.add('active-filter');
-    } else {
+    } else if (selectedValue === 'all') {
         currentFilterMode = 'all';
-        currentPage = 1;
-        document.getElementById('filter-button').textContent = 'Фильтр по одинаковым вопросам';
-        document.getElementById('filter-button').classList.remove('active-filter');
+    } else {
+        currentFilterMode = selectedValue;
     }
+    
+    currentPage = 1;
     displayQuestions(currentPage);
 }
 
 function navigateToPage(direction) {
-    const maxPage = currentFilterMode === 'identical' 
-        ? Math.ceil(groupedQuestions.length / maxGroupsPerPage)
-        : Math.ceil(questionDatabase.length / itemsPerPage);
+    let maxPage;
+    
+    if (currentFilterMode === 'identical') {
+        maxPage = Math.ceil(groupedQuestions.length / maxGroupsPerPage);
+    } else if (currentFilterMode !== 'all') {
+        const filteredQuestions = filterQuestionsBySection(currentFilterMode);
+        maxPage = Math.ceil(filteredQuestions.length / itemsPerPage);
+    } else {
+        maxPage = Math.ceil(questionDatabase.length / itemsPerPage);
+    }
     
     if (direction === 'prev' && currentPage > 1) {
         currentPage--;
@@ -228,16 +349,22 @@ function navigateToPage(direction) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    const paginationControls = document.querySelector('.pagination-controls');
-    const filterButton = document.createElement('button');
-    filterButton.id = 'filter-button';
-    filterButton.className = 'filter-button';
-    filterButton.textContent = 'Фильтр по одинаковым вопросам';
-    paginationControls.parentNode.insertBefore(filterButton, paginationControls.nextSibling);
+    initNotification();
     
-    filterButton.addEventListener('click', toggleFilterMode);
+    const filterSelect = document.getElementById('filter-select');
+    
+    sections.forEach(section => {
+        if (section !== 'Одинаковые вопросы') {
+            const option = document.createElement('option');
+            option.value = section;
+            option.textContent = section;
+            filterSelect.appendChild(option);
+        }
+    });
     
     displayQuestions(currentPage);
+    
+    filterSelect.addEventListener('change', changeFilterMode);
     
     document.getElementById('prev-page').addEventListener('click', () => navigateToPage('prev'));
     document.getElementById('next-page').addEventListener('click', () => navigateToPage('next'));
