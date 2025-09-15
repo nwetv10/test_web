@@ -98,14 +98,14 @@ function updateAllPagination() {
         totalItems = filteredQuestions.length;
         totalPages = Math.ceil(totalItems / itemsPerPage);
         currentText = totalPages === 1 ? 
-            `Одна страница\n(вопросов: ${totalItems})` : 
-            `Стр. ${currentPage} из ${totalPages}\n(вопросов: ${totalItems})`;
+            `Одна страница\n(${totalItems} вопр.)` : 
+            `Стр. ${currentPage} из ${totalPages}\n(${totalItems} вопр.)`;
     } else {
         totalItems = questionDatabase.length;
         totalPages = Math.ceil(totalItems / itemsPerPage);
         currentText = totalPages === 1 ? 
-            `Одна страница\n(вопросов: ${totalItems})` : 
-            `Стр. ${currentPage} из ${totalPages}\n(вопросов: ${totalItems})`;
+            `Одна страница\n(${totalItems} вопр.)` : 
+            `Стр. ${currentPage} из ${totalPages}\n(${totalItems} вопр.)`;
     }
     
     pageInfo.innerHTML = currentText;
