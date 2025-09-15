@@ -275,7 +275,6 @@ footer {
 
 mark {
     background: linear-gradient(120deg, #ffeb3b 0%, #ffd700 100%);
-    padding: 2px 4px;
     border-radius: 4px;
     font-weight: 600;
 }
