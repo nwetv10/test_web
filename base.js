@@ -14,6 +14,7 @@ const sections = [
     "Законодательство",
     "Соблюдение ФЗ 230",
     "Процедуры и инструкции",
+    "Процедуры и инструкции РГ",
     "Стандарты обслуживания по телефону",
     "Правила применения аргументации",
     "Правила применения аргументации 1-30",
@@ -80,6 +81,9 @@ function updateAllPagination() {
     const floatingNext = document.getElementById('floating-next');
     const bottomPrev = document.getElementById('bottom-prev-page');
     const bottomNext = document.getElementById('bottom-next-page');
+    const topPagination = document.querySelector('.pagination-controls:not(.bottom-pagination)');
+    const bottomPagination = document.querySelector('.bottom-pagination');
+    const floatingPagination = document.querySelector('.floating-pagination');
     
     let totalPages, currentText, totalItems;
     
@@ -111,10 +115,22 @@ function updateAllPagination() {
     floatingNext.disabled = isLastPage;
     bottomPrev.disabled = isFirstPage;
     bottomNext.disabled = isLastPage;
+
+    if (totalPages <= 1) {
+        topPagination.classList.add('hidden');
+        bottomPagination.classList.add('hidden');
+        floatingPagination.classList.add('hidden');
+    } else {
+        topPagination.classList.remove('hidden');
+        bottomPagination.classList.remove('hidden');
+        floatingPagination.classList.remove('hidden');
+    }
 }
 
 function toggleFloatingPagination() {
     const floatingPagination = document.querySelector('.floating-pagination');
+    if (floatingPagination.classList.contains('hidden')) return;
+    
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     const windowHeight = window.innerHeight;
     const documentHeight = document.documentElement.scrollHeight;
