@@ -92,20 +92,20 @@ function updateAllPagination() {
         totalPages = Math.ceil(totalItems / maxGroupsPerPage);
         currentText = totalPages === 1 ? 
             `Одна страница\n(групп: ${totalItems})` : 
-            `Страница ${currentPage} из ${totalPages}\n(групп: ${totalItems})`;
+            `Стр. ${currentPage} из ${totalPages}\n(групп: ${totalItems})`;
     } else if (currentFilterMode !== 'all') {
         const filteredQuestions = filterQuestionsBySection(currentFilterMode);
         totalItems = filteredQuestions.length;
         totalPages = Math.ceil(totalItems / itemsPerPage);
         currentText = totalPages === 1 ? 
             `Одна страница\n(вопросов: ${totalItems})` : 
-            `Страница ${currentPage} из ${totalPages}\n(вопросов: ${totalItems})`;
+            `Стр. ${currentPage} из ${totalPages}\n(вопросов: ${totalItems})`;
     } else {
         totalItems = questionDatabase.length;
         totalPages = Math.ceil(totalItems / itemsPerPage);
         currentText = totalPages === 1 ? 
             `Одна страница\n(вопросов: ${totalItems})` : 
-            `Страница ${currentPage} из ${totalPages}\n(вопросов: ${totalItems})`;
+            `Стр. ${currentPage} из ${totalPages}\n(вопросов: ${totalItems})`;
     }
     
     pageInfo.innerHTML = currentText;
@@ -123,7 +123,6 @@ function updateAllPagination() {
     bottomNext.disabled = isLastPage;
 
     if (totalPages <= 1) {
-        // Скрываем кнопки навигации, оставляем только информацию
         prevButton.style.display = 'none';
         nextButton.style.display = 'none';
         bottomPrev.style.display = 'none';
@@ -131,7 +130,6 @@ function updateAllPagination() {
         
         floatingPagination.classList.add('hidden');
     } else {
-        // Показываем кнопки навигации
         prevButton.style.display = 'flex';
         nextButton.style.display = 'flex';
         bottomPrev.style.display = 'flex';
@@ -140,9 +138,14 @@ function updateAllPagination() {
         floatingPagination.classList.remove('hidden');
     }
     
-    // Всегда показываем панели управления
     topPageManagement.classList.remove('hidden');
     bottomPageManagement.classList.remove('hidden');
+	    setTimeout(() => {
+        const pageManagement = document.querySelectorAll('.page-management');
+        pageManagement.forEach(panel => {
+            panel.style.display = 'flex';
+        });
+    }, 0);
 }
 
 function toggleFloatingPagination() {
