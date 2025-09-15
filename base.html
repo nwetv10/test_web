@@ -11,10 +11,11 @@
     <div class="container">
         <h1>База вопросов</h1>
         
-        <div class="pagination-controls">
-            <button id="prev-page" class="pagination-button">&#9664; Назад</button>
-            <span id="page-info"></span>
-            <button id="next-page" class="pagination-button">Вперед &#9654;</button>
+        <!-- Единая панель управления страницами (верхняя) -->
+        <div class="page-management top-page-management">
+            <button id="prev-page" class="page-management-button">&#9664; Назад</button>
+            <span id="page-info" class="page-info"></span>
+            <button id="next-page" class="page-management-button">Вперед &#9654;</button>
         </div>
         
         <div class="filter-container">
@@ -32,10 +33,11 @@
         
         <div class="result-container" id="results"></div>
         
-        <div class="pagination-controls bottom-pagination">
-            <button id="bottom-prev-page" class="pagination-button">&#9664; Назад</button>
-            <span id="bottom-page-info"></span>
-            <button id="bottom-next-page" class="pagination-button">Вперед &#9654;</button>
+        <!-- Единая панель управления страницами (нижняя) -->
+        <div class="page-management bottom-page-management">
+            <button id="bottom-prev-page" class="page-management-button">&#9664; Назад</button>
+            <span id="bottom-page-info" class="page-info"></span>
+            <button id="bottom-next-page" class="page-management-button">Вперед &#9654;</button>
         </div>
         
         <div id="copy-notification" class="copy-notification">Ответ скопирован!</div>
