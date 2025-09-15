@@ -281,14 +281,12 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('add-input-button').addEventListener('click', addKeywordInput);
     document.getElementById('remove-input-button').addEventListener('click', removeKeywordInput);
     
-    // ДОБАВЛЕНО: Глобальная обработка нажатия Enter
     document.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
-            // Проверяем, что фокус находится в одном из полей ввода
             const activeElement = document.activeElement;
             if (activeElement.classList.contains('keyword-input')) {
                 handleSearch();
-                e.preventDefault(); // Предотвращаем перенос строки
+                e.preventDefault();
             }
         }
     });
