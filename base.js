@@ -73,16 +73,16 @@ function filterQuestionsBySection(section) {
 
 function updateAllPagination() {
     const pageInfo = document.getElementById('page-info');
-    const floatingInfo = document.getElementById('floating-page-info');
     const bottomInfo = document.getElementById('bottom-page-info');
+    const floatingInfo = document.getElementById('floating-page-info');
     const prevButton = document.getElementById('prev-page');
     const nextButton = document.getElementById('next-page');
     const floatingPrev = document.getElementById('floating-prev');
     const floatingNext = document.getElementById('floating-next');
     const bottomPrev = document.getElementById('bottom-prev-page');
     const bottomNext = document.getElementById('bottom-next-page');
-    const topPagination = document.querySelector('.pagination-controls:not(.bottom-pagination)');
-    const bottomPagination = document.querySelector('.bottom-pagination');
+    const topPageManagement = document.querySelector('.top-page-management');
+    const bottomPageManagement = document.querySelector('.bottom-page-management');
     const floatingPagination = document.querySelector('.floating-pagination');
     
     let totalPages, currentText, totalItems;
@@ -90,21 +90,27 @@ function updateAllPagination() {
     if (currentFilterMode === 'identical') {
         totalItems = groupedQuestions.length;
         totalPages = Math.ceil(totalItems / maxGroupsPerPage);
-        currentText = `Страница ${currentPage} из ${totalPages}\n(групп: ${totalItems})`;
+        currentText = totalPages === 1 ? 
+            `Одна страница\n(групп: ${totalItems})` : 
+            `Страница ${currentPage} из ${totalPages}\n(групп: ${totalItems})`;
     } else if (currentFilterMode !== 'all') {
         const filteredQuestions = filterQuestionsBySection(currentFilterMode);
         totalItems = filteredQuestions.length;
         totalPages = Math.ceil(totalItems / itemsPerPage);
-        currentText = `Страница ${currentPage} из ${totalPages}\n(вопросов: ${totalItems})`;
+        currentText = totalPages === 1 ? 
+            `Одна страница\n(вопросов: ${totalItems})` : 
+            `Страница ${currentPage} из ${totalPages}\n(вопросов: ${totalItems})`;
     } else {
         totalItems = questionDatabase.length;
         totalPages = Math.ceil(totalItems / itemsPerPage);
-        currentText = `Страница ${currentPage} из ${totalPages}\n(вопросов: ${totalItems})`;
+        currentText = totalPages === 1 ? 
+            `Одна страница\n(вопросов: ${totalItems})` : 
+            `Страница ${currentPage} из ${totalPages}\n(вопросов: ${totalItems})`;
     }
     
     pageInfo.innerHTML = currentText;
-    floatingInfo.textContent = `${currentPage}/${totalPages}`;
     bottomInfo.innerHTML = currentText;
+    floatingInfo.textContent = `${currentPage}/${totalPages}`;
     
     const isFirstPage = currentPage === 1;
     const isLastPage = currentPage === totalPages;
@@ -117,14 +123,26 @@ function updateAllPagination() {
     bottomNext.disabled = isLastPage;
 
     if (totalPages <= 1) {
-        topPagination.classList.add('hidden');
-        bottomPagination.classList.add('hidden');
+        // Скрываем кнопки навигации, оставляем только информацию
+        prevButton.style.display = 'none';
+        nextButton.style.display = 'none';
+        bottomPrev.style.display = 'none';
+        bottomNext.style.display = 'none';
+        
         floatingPagination.classList.add('hidden');
     } else {
-        topPagination.classList.remove('hidden');
-        bottomPagination.classList.remove('hidden');
+        // Показываем кнопки навигации
+        prevButton.style.display = 'flex';
+        nextButton.style.display = 'flex';
+        bottomPrev.style.display = 'flex';
+        bottomNext.style.display = 'flex';
+        
         floatingPagination.classList.remove('hidden');
     }
+    
+    // Всегда показываем панели управления
+    topPageManagement.classList.remove('hidden');
+    bottomPageManagement.classList.remove('hidden');
 }
 
 function toggleFloatingPagination() {
