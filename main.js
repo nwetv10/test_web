@@ -3,6 +3,14 @@ let NotifPositionY = 'top';   /* bottom,middle,top */
 let NotifColorText = '#FFFFFF';
 let NotifColorBg = '#00BE3B';
 
+let initialFragmentsCount = 4;
+let maxFragmentsCount = 6;
+let maxQuestionsPerPage = 15;
+
+let currentPage = 1;
+let searchResults = [];
+let searchKeywords = [];
+
 function initNotification() {
     const notification = document.getElementById('copy-notification');
     notification.className = 'copy-notification';
@@ -77,7 +85,7 @@ function escapeRegex(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function displayResults(results, keywords) {
+function displayResults(results, keywords, page = 1) {
     const resultsContainer = document.getElementById('results');
     resultsContainer.innerHTML = '';
     
@@ -86,10 +94,15 @@ function displayResults(results, keywords) {
         noResults.className = 'no-results';
         noResults.innerHTML = '<h3>Ничего не найдено</h3><p>Скорее всего этого вопроса нет в базе, либо ошибка в фрагмента</p>';
         resultsContainer.appendChild(noResults);
+        hidePagination();
         return;
     }
     
-    const groupedResults = groupIdenticalQuestions(results);
+    const startIndex = (page - 1) * maxQuestionsPerPage;
+    const endIndex = Math.min(startIndex + maxQuestionsPerPage, results.length);
+    const paginatedResults = results.slice(startIndex, endIndex);
+    
+    const groupedResults = groupIdenticalQuestions(paginatedResults);
     
     groupedResults.forEach(group => {
         if (group.length > 1) {
@@ -149,7 +162,84 @@ function displayResults(results, keywords) {
         }
     });
     
+    updatePagination(results.length, page);
     addCopyHandlers();
+}
+
+function updatePagination(totalItems, currentPage) {
+    const totalPages = Math.ceil(totalItems / maxQuestionsPerPage);
+    
+    if (totalPages <= 1) {
+        hidePagination();
+        return;
+    }
+    
+    const pageInfo = document.getElementById('page-info');
+    const bottomInfo = document.getElementById('bottom-page-info');
+    const floatingInfo = document.getElementById('floating-page-info');
+    const prevButton = document.getElementById('prev-page');
+    const nextButton = document.getElementById('next-page');
+    const floatingPrev = document.getElementById('floating-prev');
+    const floatingNext = document.getElementById('floating-next');
+    const bottomPrev = document.getElementById('bottom-prev-page');
+    const bottomNext = document.getElementById('bottom-next-page');
+    const topPageManagement = document.querySelector('.top-page-management');
+    const bottomPageManagement = document.querySelector('.bottom-page-management');
+    const floatingPagination = document.querySelector('.floating-pagination');
+    
+    const currentText = totalPages === 1 ? 
+        `Одна страница\n(${totalItems} вопр.)` : 
+        `Стр. ${currentPage} из ${totalPages}\n(${totalItems} вопр.)`;
+    
+    pageInfo.innerHTML = currentText;
+    bottomInfo.innerHTML = currentText;
+    floatingInfo.textContent = `${currentPage}/${totalPages}`;
+    
+    const isFirstPage = currentPage === 1;
+    const isLastPage = currentPage === totalPages;
+    
+    prevButton.disabled = isFirstPage;
+    nextButton.disabled = isLastPage;
+    floatingPrev.disabled = isFirstPage;
+    floatingNext.disabled = isLastPage;
+    bottomPrev.disabled = isFirstPage;
+    bottomNext.disabled = isLastPage;
+
+    topPageManagement.classList.remove('hidden');
+    bottomPageManagement.classList.remove('hidden');
+    floatingPagination.classList.remove('hidden');
+    
+    setTimeout(() => {
+        const pageManagement = document.querySelectorAll('.page-management');
+        pageManagement.forEach(panel => {
+            panel.style.display = 'flex';
+        });
+    }, 0);
+}
+
+function hidePagination() {
+    const topPageManagement = document.querySelector('.top-page-management');
+    const bottomPageManagement = document.querySelector('.bottom-page-management');
+    const floatingPagination = document.querySelector('.floating-pagination');
+    
+    topPageManagement.classList.add('hidden');
+    bottomPageManagement.classList.add('hidden');
+    floatingPagination.classList.add('hidden');
+}
+
+function toggleFloatingPagination() {
+    const floatingPagination = document.querySelector('.floating-pagination');
+    if (floatingPagination.classList.contains('hidden')) return;
+    
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+    
+    if (scrollTop > 200 && scrollTop + windowHeight < documentHeight - 100) {
+        floatingPagination.classList.add('visible');
+    } else {
+        floatingPagination.classList.remove('visible');
+    }
 }
 
 function addCopyHandlers() {
@@ -235,12 +325,12 @@ function showCopyNotification(message) {
 function updateInputControls() {
     const inputCount = document.querySelectorAll('.keyword-input').length;
     document.getElementById('remove-input-button').disabled = inputCount <= 1;
-    document.getElementById('add-input-button').disabled = inputCount >= 6;
+    document.getElementById('add-input-button').disabled = inputCount >= maxFragmentsCount;
 }
 
 function addKeywordInput() {
     const container = document.getElementById('keyword-inputs-container');
-    if (container.children.length >= 6) return;
+    if (container.children.length >= maxFragmentsCount) return;
     
     const newInput = document.createElement('input');
     newInput.type = 'text';
@@ -264,6 +354,23 @@ function removeKeywordInput() {
     
     container.removeChild(container.lastChild);
     updateInputControls();
+}
+
+function navigateToPage(direction) {
+    const maxPage = Math.ceil(searchResults.length / maxQuestionsPerPage);
+    
+    if (direction === 'prev' && currentPage > 1) {
+        currentPage--;
+        displayResults(searchResults, searchKeywords, currentPage);
+    } else if (direction === 'next' && currentPage < maxPage) {
+        currentPage++;
+        displayResults(searchResults, searchKeywords, currentPage);
+    }
+    
+    window.scrollTo({
+        top: document.getElementById('results').offsetTop - 20,
+        behavior: 'smooth'
+    });
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -291,14 +398,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    for (let i = 1; i < initialFragmentsCount; i++) {
+        addKeywordInput();
+    }
     updateInputControls();
     
     function handleSearch() {
         const inputs = document.querySelectorAll('.keyword-input');
         const keywords = Array.from(inputs).map(input => input.value.trim());
         
-        const results = searchQuestions(keywords);
-        displayResults(results, keywords);
+        searchResults = searchQuestions(keywords);
+        searchKeywords = keywords;
+        currentPage = 1;
+        
+        displayResults(searchResults, keywords, currentPage);
         
         inputs.forEach(input => {
             input.value = '';
@@ -316,4 +429,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if ('ontouchstart' in window) {
         document.body.classList.add('touch-device');
     }
+    
+    document.getElementById('prev-page').addEventListener('click', () => navigateToPage('prev'));
+    document.getElementById('next-page').addEventListener('click', () => navigateToPage('next'));
+    document.getElementById('floating-prev').addEventListener('click', () => navigateToPage('prev'));
+    document.getElementById('floating-next').addEventListener('click', () => navigateToPage('next'));
+    document.getElementById('bottom-prev-page').addEventListener('click', () => navigateToPage('prev'));
+    document.getElementById('bottom-next-page').addEventListener('click', () => navigateToPage('next'));
+    
+    window.addEventListener('scroll', toggleFloatingPagination);
+    toggleFloatingPagination();
 });
