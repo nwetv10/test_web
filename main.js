@@ -131,7 +131,7 @@ function displayResults(results, keywords, page = 1) {
                 
                 const answerText = document.createElement('div');
                 answerText.className = 'answer-text';
-                answerText.innerHTML = highlightText(item.answer, keywords).replace(/\n/g, '<br>');
+                answerText.innerHTML = escapeHtml(item.answer).replace(/\n/g, '<br>');
                 answerText.setAttribute('data-answer', item.answer);
                 answerContainer.appendChild(answerText);
                 
@@ -151,7 +151,7 @@ function displayResults(results, keywords, page = 1) {
                 
                 const answerText = document.createElement('div');
                 answerText.className = 'answer-text';
-                answerText.innerHTML = highlightText(item.answer, keywords).replace(/\n/g, '<br>');
+                answerText.innerHTML = escapeHtml(item.answer).replace(/\n/g, '<br>');
                 answerText.setAttribute('data-answer', item.answer);
                 
                 questionItem.appendChild(questionText);
