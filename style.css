@@ -929,3 +929,12 @@ mark {
     min-width: 280px;
     overflow-x: hidden;
 }
+
+.hidden {
+    display: none !important;
+}
+
+.visible {
+    opacity: 1;
+    visibility: visible;
+}
