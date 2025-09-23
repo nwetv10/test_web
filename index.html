@@ -20,10 +20,28 @@
             <button id="search-button">Найти</button>
         </div>
         
+        <div class="page-management top-page-management hidden">
+            <button id="prev-page" class="page-management-button">&#9664; Назад</button>
+            <span id="page-info" class="page-info"></span>
+            <button id="next-page" class="page-management-button">Вперед &#9654;</button>
+        </div>
+        
         <div class="result-container" id="results">
             <div class="placeholder">
                 <p>Результаты поиска будут отображены здесь</p>
             </div>
+        </div>
+
+        <div class="page-management bottom-page-management hidden">
+            <button id="bottom-prev-page" class="page-management-button">&#9664; Назад</button>
+            <span id="bottom-page-info" class="page-info"></span>
+            <button id="bottom-next-page" class="page-management-button">Вперед &#9654;</button>
+        </div>
+        
+        <div class="floating-pagination hidden">
+            <button id="floating-prev" class="floating-pagination-button">&#9664;</button>
+            <span id="floating-page-info"></span>
+            <button id="floating-next" class="floating-pagination-button">&#9654;</button>
         </div>
         
         <div id="copy-notification" class="copy-notification">Ответ скопирован!</div>
